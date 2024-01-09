@@ -1,12 +1,17 @@
-let imageQuery = localStorage.getItem('imageQuery');
+let imageQuery = JSON.parse(localStorage.getItem('imageQuery'));
 
 if (!imageQuery) {
     imageQuery = 'nature';
+} else {
+    document.querySelector('#imageQuery').value = imageQuery;
 }
 
-async function getBackground() {
+async function getBackground(query) {
+    if (!query) {
+        query = 'dogs'
+    }
     try {
-        const response = await fetch(`https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=${imageQuery}`);
+        const response = await fetch(`https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=${query}`);
         const data = await response.json();
         console.log(data);
         setBackground(data.urls.raw, data.user.name, data.links.html, data.location);
@@ -18,14 +23,24 @@ async function getBackground() {
 }
 
 function setBackground(imageUrl, author, link, location) {
-    console.log(imageUrl, author);
     document.querySelector('body').style.backgroundImage = `url(${imageUrl})`;
     document.querySelector('#image-credit').innerHTML = location.name ? `<p>${location.name}<br> By <a href="${link}" target="_blank">${author}</a>
     </p>` : `<p>By <a href="${link}" target="_blank">${author}</a></p>`;
 }
 
+// change the image query
 
-getBackground()
+document.querySelector('form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    console.log(e.target)
+    const query = document.querySelector('#imageQuery').value;
+    console.log(query);
+    localStorage.setItem('imageQuery',JSON.stringify(query))
+    getBackground(query);
+})
+
+
+// ! Time and date - not very DRY
 
 function getTodaysDate() {
     const today = new Date(Date.now());
@@ -35,7 +50,6 @@ function getTodaysDate() {
     const month = getMonthName(today);
     const year = today.getFullYear();
     const dateString = `${day} ${date} ${month} ${year}`;
-    console.log(dateString);
     document.querySelector('#dateDisplay').textContent = dateString;
     return dateString;
 }
@@ -52,7 +66,25 @@ function getDayName(date) {
     return day;
 }
 
-getTodaysDate();
+// 24 hour time
+function getTime() {
+    const time = new Date(Date.now());
+    const hour = time.getHours();
+    const min = time.getMinutes();
+    const timeString = `${hour}:${min}`;
+    document.querySelector('#timeDisplay').textContent = timeString;
+    return timeString;
+}
+
+function getTimeAndDate() {
+    getTime();
+    getTodaysDate();
+    console.log(getTime(), getTodaysDate());
+}
+
+// run once on page load
+getBackground(imageQuery)
+getTimeAndDate();
 
 // time function can be setInterval every second to update time
-
+setInterval(getTimeAndDate, 60000);
