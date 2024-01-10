@@ -11,10 +11,16 @@ async function getStoredBackground(stored) {
         setNewBackground(imageQuery);
     } else {
 
+        const options = {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }
+
         try {
-            const response = await fetch(`https://apis.scrimba.com/unsplash/photos/${stored}`);
+            const response = await fetch(`https://apis.scrimba.com/unsplash/photos/${stored}`, options);
             const data = await response.json();
-            console.log('stored data: ', data);
             setBackground(data);
         } catch(err) {
             console.error(err);
@@ -25,19 +31,26 @@ async function getStoredBackground(stored) {
 async function setNewBackground(query) {
 
     if (!query) {
-        // if query isn't set go to default matching html placeholder
+        // if query isn't set go to default (matching placeholder)
         query = 'nature';
     } 
+
+    const options = {
+        method: 'GET',
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }
     
     try {
-        const response = await fetch(`https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=${query}`);
+        const response = await fetch(`https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=${query}`, options);
         const data = await response.json();
-        console.log(data);
         setBackground(data);
         currentImageId = data.id;
     } catch (err) {
         console.log('Error getting data')
         console.log('Error: ', err);
+        // TODO: display error on page        
     }
 }
 
@@ -69,32 +82,14 @@ function storeImage(id) {
 document.querySelector('#storeImgBtn').addEventListener('click', () => storeImage(currentImageId))
 
 
-// ! weather - IN PROGRESS
-// get the users location
-// call the open-meteo api to get temp & weather
-getGeoPosition();
-
-
-async function getWeather(lat,long) {
-
-
-    try {
-    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&hourly=temperature_2m&timezone=Australia%2FSydney`);
-        const data = await res.json();
-        console.log(data);
-    } catch(err) {
-        console.log('Error getting weather data',err);
-    }
-    
-    
-}
+// weather
 
 function getGeoPosition() {
     // function if successful
     function success(position) {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
-        console.log(`Latitude: ${latitude} \n Longitude: ${longitude}`);
+        // console.log(`Latitude: ${latitude} \n Longitude: ${longitude}`);
         getWeather(latitude, longitude);
         
     }
@@ -112,8 +107,95 @@ function getGeoPosition() {
 
 }
 
+async function getWeather(lat,long) {
 
-// ! Time and date - not very DRY
+    const options = {
+        method: 'GET',
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }
+
+    try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current=apparent_temperature,weather_code`, options);
+        const data = await res.json();
+        // console.log('weather data: ',data);
+        getLocationName(lat,long);
+        const icon = getWeatherIcon(data.current.weather_code);
+        document.querySelector('#weatherDisplay').textContent = `${data.current.apparent_temperature}${data.current_units.apparent_temperature} ${icon}`;
+
+    } catch(err) {
+        console.log('Error getting weather data',err);
+    }
+}
+
+async function getLocationName(lat,long) {
+
+    const options = {
+        method: 'GET',
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }
+
+    try {
+        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${long}`, options);
+        const data = await res.json();
+        document.querySelector('#locationDisplay').textContent = `${data.city}, ${data.countryName}`;
+    } catch(err) {
+        console.log('Error getting location name',err);
+    }
+}
+
+function getWeatherIcon(code) {
+    let icon = '';
+    
+    if (code == 0) {
+        icon = '☀️';
+    } else if (code == 1) {
+        icon = '🌤️';
+    } else if (code == 2) {
+        icon = '🌥️';
+    } else if (code == 3) {
+        icon = '☁️';
+    } else if (code == 45 || code == 48) {
+        icon = '😶‍🌫️';
+    } else if (code == 63 || code == 65 || code == 82) {
+        icon = '☔️';
+    } else if (code > 50 && code < 70) {
+        icon = '🌧️';
+    } else if (code == 80 || code == 81) {
+        icon = '🌦️';
+    } else if (code > 70 && code < 90 ) {
+        icon = '🌨️';
+    } else if (code > 90 && code < 100) {
+        icon = '⛈️'
+    } else {
+        console.log('error getting weather for code: ',code)
+    }
+    return icon;
+}
+
+// quotes
+async function getQuote() {
+
+    const options = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }
+    const res = await fetch('https://api.quotable.io/quotes/random', options);
+    const data = await res.json();
+    // console.log('quote data: ',data)
+    document.querySelector('#quoteDisplay').innerHTML = `
+    <blockquote>${data[0].content}</blockquote>
+    <cite>${data[0].author}</cite>`;
+}
+
+
+// Time and date
+// ! not very DRY
 
 function getTodaysDate() {
     const today = new Date(Date.now());
@@ -153,13 +235,55 @@ function getTime() {
 function getTimeAndDate() {
     getTime();
     getTodaysDate();
-    console.log(getTime(), getTodaysDate());
 }
+
+// recipe
+
+async function getRecipe() {
+
+    // ? including header with content-type application/json causes error
+
+    try {
+        const res = await fetch('https://www.themealdb.com/api/json/v1/1/random.php');
+        const data = await res.json();
+        displayRecipe(data);
+    } catch(err) {
+        console.log('Error getting recipe data',err)
+    }
+    
+}
+
+function displayRecipe(data) {
+    const title = data.meals[0].strMeal;
+    const thumbnailUrl = data.meals[0].strMealThumb;
+    const linkUrl = data.meals[0].strSource;
+
+    const container = document.querySelector('#displayRecipes');
+
+    const titleEl = document.createElement('p');
+    titleEl.textContent = title;
+
+    const imageEl = document.createElement('img');
+    imageEl.src = thumbnailUrl;
+    imageEl.alt = "meal thumbnail";
+
+    const anchorEl = document.createElement('a');
+    anchorEl.href = linkUrl;
+    anchorEl.target = "_blank";
+
+
+    anchorEl.append(imageEl);
+    container.append(titleEl,anchorEl);
+}
+
 
 // run once on page load
 getStoredBackground(storedImageId);
 getTimeAndDate();
 getGeoPosition();
+getQuote();
+getRecipe();
+
 
 // update time every second
 setInterval(getTimeAndDate, 60000);

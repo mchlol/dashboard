@@ -6,15 +6,16 @@
     <title>Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="gradient">
     <main>
         <div class="top-left container">
-            Loading recipes...
+            <div id="displayRecipes"></div>
         </div>
 
         <div class="top-right container">
-            <div id="weatherDisplay">
-                Loading weather...
+            <div id="weatherDisplayWrap">
+                <div id="weatherDisplay">Loading weather...</div>
+                <p id="locationDisplay"></p>
             </div>
         </div>
 
@@ -34,14 +35,14 @@
         <div class="bottom-center container">
             <p>Set image category:</p>
             <form id="image-form">
-                <label for="imageQuery"></label>
+                <label for="imageQueryInput"></label>
                 <input type="text" id="imageQueryInput" placeholder="nature">
                 <button type="submit">Search</button>
             </form>
         </div>
 
         <div class="bottom-right container">
-            Loading quote...
+            <div id="quoteDisplay"></div>
         </div>
         
     </main>
