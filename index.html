@@ -8,9 +8,13 @@
 </head>
 <body>
     <main>
-        <div class="top-left container">Top left Crypto</div>
+        <div class="top-left container">Recipe: <span id="recipeDisplay">Recipe name & link</span></div>
 
-        <div class="top-right container">Top right Weather</div>
+        <div class="top-right container">
+            <div id="weatherDisplay">
+                Top right Weather
+            </div>
+        </div>
 
         <div class="middle-row">
             <h1 id="timeDisplay">3:00pm</h1>
@@ -19,13 +23,17 @@
 
         <div class="bottom-left container">
             <p id="image-credit"></p>
+            <div class="btn-contaner">
+                <button id="storeImgBtn">Save image</button>
+                <button id="changeImgBtn">New image</button>
+            </div>
         </div>
 
         <div class="bottom-center container">
             <p>Set image category:</p>
             <form id="image-form">
                 <label for="imageQuery"></label>
-                <input type="text" id="imageQuery" placeholder="nature">
+                <input type="text" id="imageQueryInput" placeholder="nature">
                 <button type="submit">Search</button>
             </form>
         </div>
