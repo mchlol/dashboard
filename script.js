@@ -1,7 +1,14 @@
 let imageQuery = JSON.parse(localStorage.getItem('imageQuery'));
+
+if (!imageQuery) {
+    // if query isn't set go to default (matching placeholder)
+    imageQuery = 'nature';
+} 
+
 let storedImageId = JSON.parse(localStorage.getItem('storedImageId'))
 let currentImageId = '';
 const changeImgBtn = document.querySelector('#changeImgBtn');
+changeImgBtn.textContent = `Get new ${imageQuery} image`;
 
 changeImgBtn.addEventListener('click', () => setNewBackground(imageQuery));
 
@@ -20,8 +27,13 @@ async function getStoredBackground(stored) {
 
         try {
             const response = await fetch(`https://apis.scrimba.com/unsplash/photos/${stored}`, options);
-            const data = await response.json();
-            setBackground(data);
+            if (!res.ok) {
+                throw Error('Something went wrong');
+            } else {
+                const data = await response.json();
+                setBackground(data);
+            }
+            
         } catch(err) {
             console.error(err);
         }
@@ -29,12 +41,7 @@ async function getStoredBackground(stored) {
 }
 
 async function setNewBackground(query) {
-
-    if (!query) {
-        // if query isn't set go to default (matching placeholder)
-        query = 'nature';
-    } 
-
+    
     const options = {
         method: 'GET',
         headers: {
@@ -44,9 +51,13 @@ async function setNewBackground(query) {
     
     try {
         const response = await fetch(`https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=${query}`, options);
-        const data = await response.json();
-        setBackground(data);
-        currentImageId = data.id;
+        if (!response.ok) {
+            throw Error('Something went wrong');
+        } else {
+            const data = await response.json();
+            setBackground(data);
+            currentImageId = data.id;
+        }
     } catch (err) {
         console.log('Error getting data')
         console.log('Error: ', err);
@@ -55,23 +66,23 @@ async function setNewBackground(query) {
 }
 
 function setBackground(data) {
-    const imageUrl = data.urls.raw;
+    const imageUrl = data.urls.full;
     const author = data.user.name;
     const link = data.links.html;
     const location = data.location;
     document.querySelector('body').style.backgroundImage = `url(${imageUrl})`;
-    document.querySelector('#image-credit').innerHTML = location.name ? `<p>${location.name}<br> By <a href="${link}" target="_blank">${author}</a>
-    </p>` : `<p>By <a href="${link}" target="_blank">${author}</a></p>`;
+    document.querySelector('#image-info').innerHTML = location.name ? `<p>Image by <a href="${link}" target="_blank">${author} <br> ${location.name}<br> </a>
+    </p>` : `<p>Image by <a href="${link}" target="_blank">${author}</a></p>`;
 }
 
 // * change the image query
 
 document.querySelector('form').addEventListener('submit', (e) => {
     e.preventDefault();
-    console.log(e.target)
     const query = document.querySelector('#imageQueryInput').value;
-    console.log('query: ',query);
-    localStorage.setItem('imageQuery',JSON.stringify(query))
+    localStorage.setItem('imageQuery',JSON.stringify(query));
+    imageQuery = query;
+    changeImgBtn.textContent = `Get new ${imageQuery} image`;
     setNewBackground(query);
 })
 
@@ -89,9 +100,7 @@ function getGeoPosition() {
     function success(position) {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
-        // console.log(`Latitude: ${latitude} \n Longitude: ${longitude}`);
-        getWeather(latitude, longitude);
-        
+        getWeather(latitude, longitude); 
     }
     
     // function if error
@@ -119,11 +128,13 @@ async function getWeather(lat,long) {
     try {
     const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current=apparent_temperature,weather_code`, options);
         const data = await res.json();
-        // console.log('weather data: ',data);
-        getLocationName(lat,long);
-        const icon = getWeatherIcon(data.current.weather_code);
-        document.querySelector('#weatherDisplay').textContent = `${data.current.apparent_temperature}${data.current_units.apparent_temperature} ${icon}`;
-
+        if (!res.ok) {
+            throw Error('Something went wrong');
+        } else {
+            getLocationName(lat,long);
+            const icon = getWeatherIcon(data.current.weather_code);
+            document.querySelector('#weatherDisplay').textContent = `${data.current.apparent_temperature}${data.current_units.apparent_temperature} ${icon}`;
+        }
     } catch(err) {
         console.log('Error getting weather data',err);
     }
@@ -140,8 +151,12 @@ async function getLocationName(lat,long) {
 
     try {
         const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${long}`, options);
-        const data = await res.json();
-        document.querySelector('#locationDisplay').textContent = `${data.city}, ${data.countryName}`;
+        if (!res.ok) {
+            throw Error('Something went wrong');
+        } else {
+            document.querySelector('#locationDisplay').textContent = `${data.city}, ${data.countryName}`;
+            const data = await res.json();
+        }
     } catch(err) {
         console.log('Error getting location name',err);
     }
@@ -185,12 +200,20 @@ async function getQuote() {
             'Content-Type': 'application/json'
         }
     }
-    const res = await fetch('https://api.quotable.io/quotes/random', options);
-    const data = await res.json();
-    // console.log('quote data: ',data)
-    document.querySelector('#quoteDisplay').innerHTML = `
-    <blockquote>${data[0].content}</blockquote>
-    <cite>${data[0].author}</cite>`;
+    try {
+        const res = await fetch('https://api.quotable.io/quotes/random', options);
+        if (!res.ok) {
+            throw Error('Something went wrong');
+        } else {
+            const data = await res.json();
+            const searchWiki = `https://en.wikipedia.org/w/index.php?search=${data[0].author}`;
+            document.querySelector('#quoteDisplay').innerHTML = `
+            <blockquote>${data[0].content}</blockquote>
+            <cite><a href="${searchWiki}" target="_blank">${data[0].author}</a></cite>`;
+        }
+    } catch(err) {
+        console.log('Error getting quote data',err)
+    }
 }
 
 
@@ -244,9 +267,13 @@ async function getRecipe() {
     // ? including header with content-type application/json causes error
 
     try {
-        const res = await fetch('https://www.themealdb.com/api/json/v1/1/random.php');
-        const data = await res.json();
-        displayRecipe(data);
+        const res = await fetch('https://www.themldb.com/api/json/v1/1/random.php');
+        if (!res.ok) {
+            throw Error('Something went wrong');
+        } else {
+            const data = await res.json();
+            displayRecipe(data);
+        }
     } catch(err) {
         console.log('Error getting recipe data',err)
     }
