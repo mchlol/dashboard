@@ -1,3 +1,5 @@
+// background image
+
 let imageQuery = JSON.parse(localStorage.getItem('imageQuery'));
 
 if (!imageQuery) {
@@ -26,11 +28,11 @@ async function getStoredBackground(stored) {
         }
 
         try {
-            const response = await fetch(`https://apis.scrimba.com/unsplash/photos/${stored}`, options);
+            const res = await fetch(`https://apis.scrimba.com/unsplash/photos/${stored}`, options);
             if (!res.ok) {
                 throw Error('Something went wrong');
             } else {
-                const data = await response.json();
+                const data = await res.json();
                 setBackground(data);
             }
             
@@ -154,8 +156,8 @@ async function getLocationName(lat,long) {
         if (!res.ok) {
             throw Error('Something went wrong');
         } else {
-            document.querySelector('#locationDisplay').textContent = `${data.city}, ${data.countryName}`;
             const data = await res.json();
+            document.querySelector('#locationDisplay').textContent = `${data.city}, ${data.countryName}`;
         }
     } catch(err) {
         console.log('Error getting location name',err);
@@ -267,7 +269,7 @@ async function getRecipe() {
     // ? including header with content-type application/json causes error
 
     try {
-        const res = await fetch('https://www.themldb.com/api/json/v1/1/random.php');
+        const res = await fetch('https://www.themealdb.com/api/json/v1/1/random.php');
         if (!res.ok) {
             throw Error('Something went wrong');
         } else {
