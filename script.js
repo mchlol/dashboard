@@ -252,12 +252,10 @@ function getDayName(date) {
 }
 function getTime() {
     const time = new Date();
-    const hour = time.getHours() 
 
-    const timeString = time.toLocaleTimeString("en-us", {timeStyle: "short"});
+    const string = time.toLocaleTimeString("en-us", {timeStyle: "short"});
 
-    document.querySelector('#timeDisplay').textContent = timeString;
-    return timeString;
+    document.querySelector('#timeDisplay').textContent = string;
 }
 
 function getTimeAndDate() {
