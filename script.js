@@ -119,6 +119,7 @@ function getGeoPosition() {
 }
 
 async function getWeather(lat,long) {
+    const weatherDisplay = document.querySelector('#weatherDisplay');
 
     const options = {
         method: 'GET',
@@ -135,14 +136,16 @@ async function getWeather(lat,long) {
         } else {
             getLocationName(lat,long);
             const icon = getWeatherIcon(data.current.weather_code);
-            document.querySelector('#weatherDisplay').textContent = `${data.current.apparent_temperature}${data.current_units.apparent_temperature} ${icon}`;
+            weatherDisplay.textContent = `${data.current.apparent_temperature}${data.current_units.apparent_temperature} ${icon}`;
         }
     } catch(err) {
         console.log('Error getting weather data',err);
+        weatherDisplay.textContent = 'Error getting weather data';
     }
 }
 
 async function getLocationName(lat,long) {
+    const locationDisplay = document.querySelector('#locationDisplay');
 
     const options = {
         method: 'GET',
@@ -157,10 +160,11 @@ async function getLocationName(lat,long) {
             throw Error('Something went wrong');
         } else {
             const data = await res.json();
-            document.querySelector('#locationDisplay').textContent = `${data.city}, ${data.countryName}`;
+            locationDisplay.textContent = `${data.city}, ${data.countryName}`;
         }
     } catch(err) {
         console.log('Error getting location name',err);
+        locationDisplay.textContent = 'Error getting location';
     }
 }
 
@@ -214,7 +218,8 @@ async function getQuote() {
             <cite><a href="${searchWiki}" target="_blank">${data[0].author}</a></cite>`;
         }
     } catch(err) {
-        console.log('Error getting quote data',err)
+        console.log('Error getting quote data',err);
+        document.querySelector('#quoteDisplay').textContent = 'Error getting quote'
     }
 }
 
@@ -278,6 +283,7 @@ async function getRecipe() {
         }
     } catch(err) {
         console.log('Error getting recipe data',err)
+        document.querySelector('#displayRecipes').textContent = 'Error getting recipe'
     }
     
 }
