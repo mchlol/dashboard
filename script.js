@@ -140,7 +140,6 @@ async function getWeather(lat,long) {
         }
     } catch(err) {
         console.log('Error getting weather data',err);
-        weatherDisplay.textContent = 'Error getting weather data, pleae check browser permissions.';
     }
 }
 
@@ -164,6 +163,7 @@ async function getLocationName(lat,long) {
         }
     } catch(err) {
         console.log('Error getting location name',err);
+        weatherDisplay.textContent = 'Error getting weather data, please check location permissions.';
         locationDisplay.textContent = 'Error getting location';
     }
 }
@@ -254,9 +254,8 @@ function getTime() {
     const time = new Date();
     const hour = time.getHours() 
 
-    const string = time.toLocaleTimeString("en-gb", {timeStyle: "short"});
+    const timeString = time.toLocaleTimeString("en-us", {timeStyle: "short"});
 
-    const timeString = hour < 12 ? `${string} AM` : `${string} PM`;
     document.querySelector('#timeDisplay').textContent = timeString;
     return timeString;
 }
