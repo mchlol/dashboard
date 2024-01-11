@@ -140,7 +140,7 @@ async function getWeather(lat,long) {
         }
     } catch(err) {
         console.log('Error getting weather data',err);
-        weatherDisplay.textContent = 'Error getting weather data';
+        weatherDisplay.textContent = 'Error getting weather data, pleae check browser permissions.';
     }
 }
 
@@ -271,7 +271,7 @@ function getTimeAndDate() {
 
 async function getRecipe() {
 
-    // ? including header with content-type application/json causes error
+    // ? including header with content-type application/json causes error - php?
 
     try {
         const res = await fetch('https://www.themealdb.com/api/json/v1/1/random.php');
