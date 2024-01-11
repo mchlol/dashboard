@@ -228,7 +228,7 @@ async function getQuote() {
 // ! not very DRY
 
 function getTodaysDate() {
-    const today = new Date(Date.now());
+    const today = new Date();
 
     const date = today.getDate();
     const day = getDayName(today);
@@ -250,14 +250,13 @@ function getDayName(date) {
     let day = days[date.getDay()];
     return day;
 }
-
-// ! only in 24 hour time
 function getTime() {
-    const time = new Date(Date.now());
+    const time = new Date();
     const hour = time.getHours() 
-    let min = time.getMinutes();
-    min = min < 10 ? `0${min}` : min;
-    const timeString = hour < 12 ? `${hour}:${min} AM` : `${hour}:${min} PM`;
+
+    const string = time.toLocaleTimeString("en-gb", {timeStyle: "short"});
+
+    const timeString = hour < 12 ? `${string} AM` : `${string} PM`;
     document.querySelector('#timeDisplay').textContent = timeString;
     return timeString;
 }
@@ -321,4 +320,4 @@ getRecipe();
 
 
 // update time every second
-setInterval(getTimeAndDate, 60000);
+setInterval(getTime, 60000);
