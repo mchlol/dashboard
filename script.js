@@ -98,6 +98,7 @@ document.querySelector('#storeImgBtn').addEventListener('click', () => storeImag
 // weather
 
 function getGeoPosition() {
+    const weatherDisplay = document.querySelector('#weatherDisplay');
     // function if successful
     function success(position) {
         const latitude = position.coords.latitude;
@@ -108,6 +109,7 @@ function getGeoPosition() {
     // function if error
     function error() {
         console.log('Unable to get location')
+        weatherDisplay.textContent = 'Could not retrieve weather data - check browser permissions.'
     }
     
     if (!navigator.geolocation) {
@@ -129,16 +131,26 @@ async function getWeather(lat,long) {
     }
 
     try {
-    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current=apparent_temperature,weather_code`, options);
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current=temperature_2m,apparent_temperature,precipitation,weather_code`, options);
+    
         const data = await res.json();
         if (!res.ok) {
             throw Error('Something went wrong');
-        } else {
-            getLocationName(lat,long);
-            const icon = getWeatherIcon(data.current.weather_code);
-            weatherDisplay.textContent = `${data.current.apparent_temperature}${data.current_units.apparent_temperature} ${icon}`;
-        }
+        } 
+    
+        getLocationName(lat,long);
+        const icon = getWeatherIcon(data.current.weather_code);
+        console.log(data)
+        weatherDisplay.innerHTML = `<p>
+        <span class="large">${data.current.temperature_2m}${data.current_units.temperature_2m} ${icon} </span>
+        <br>
+        Feels like: ${data.current.apparent_temperature}${data.current_units.apparent_temperature}
+        <br>
+        Current rain: ${data.current.precipitation}${data.current_units.precipitation}
+        `;
+        
     } catch(err) {
+        weatherDisplay.textContent = 'Unable to retrieve weather data'
         console.log('Error getting weather data',err);
     }
 }
@@ -159,11 +171,11 @@ async function getLocationName(lat,long) {
             throw Error('Something went wrong');
         } else {
             const data = await res.json();
-            locationDisplay.textContent = `${data.city}, ${data.countryName}`;
+            locationDisplay.textContent = `${data.city},  ${data.countryName}`;
         }
     } catch(err) {
         console.log('Error getting location name',err);
-        weatherDisplay.textContent = 'Error getting weather data, please check location permissions.';
+        weatherDisplay.textContent = '';
         locationDisplay.textContent = 'Error getting location';
     }
 }
